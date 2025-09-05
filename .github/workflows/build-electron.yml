@@ -1,0 +1,96 @@
+name: Build Electron (Windows, macOS, Linux)
+
+on:
+  # Build on demand
+  workflow_dispatch:
+  # Build when you push a version tag like v1.2.3
+  push:
+    tags:
+      - "v*.*.*"
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: mac
+          - os: ubuntu-latest
+            target: linux
+          - os: windows-latest
+            target: win
+    runs-on: ${{ matrix.os }}
+
+    # Change this to your app path if it's not the repo root (e.g., app or electron/)
+    defaults:
+      run:
+        working-directory: .
+
+    env:
+      # Speeds up repeated Electron downloads
+      ELECTRON_CACHE: ${{ runner.temp }}/electron
+      ELECTRON_BUILDER_CACHE: ${{ runner.temp }}/electron-builder
+      # Prevents failing on missing code signing by default. Remove if you set up signing.
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      # If you later want to publish with electron-builder, set GH_TOKEN in repo secrets.
+      # GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # macOS notarization/signing (optional; requires your secrets)
+      # APPLE_ID: ${{ secrets.APPLE_ID }}
+      # APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      # CSC_LINK: ${{ secrets.MAC_CERT_P12_BASE64 }}
+      # CSC_KEY_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+      # Windows signing (optional)
+      # WIN_CSC_LINK: ${{ secrets.WIN_CERT_PFX_BASE64 }}
+      # WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CERT_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build renderer (if script exists)
+        shell: bash
+        run: |
+          if npm run -s | grep -qE '(^| )build( |$)'; then
+            echo "Found build script; running npm run build"
+            npm run build
+          else
+            echo "No build script; skipping."
+          fi
+
+      # Optional: install extra packaging tools on Linux if your config needs them
+      - name: Install system deps (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          # Uncomment any you need:
+          # sudo apt-get install -y rpm
+          # sudo apt-get install -y snapcraft
+          true
+
+      - name: Build with electron-builder
+        shell: bash
+        run: |
+          # Build only for the current OS, don't publish
+          npx --yes electron-builder --${{ matrix.target }} --publish never
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-artifacts
+          path: |
+            dist/**
+          if-no-files-found: warn
