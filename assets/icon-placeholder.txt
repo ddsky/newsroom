@@ -1,0 +1,11 @@
+<!-- This is a placeholder for the app icon -->
+<!-- You should replace this with an actual icon file (icon.png, icon.ico, etc.) -->
+<!-- The icon should be at least 256x256 pixels for best results -->
+
+<!-- For now, you can download a news/newspaper icon from:
+- https://fontawesome.com/icons (if you have a Pro account)
+- https://www.flaticon.com
+- https://icons8.com
+- Or create your own
+
+Save it as icon.png in this directory -->

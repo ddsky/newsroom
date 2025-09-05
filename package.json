@@ -1,0 +1,45 @@
+{
+  "name": "world-newsroom",
+  "version": "1.0.0",
+  "description": "A desktop client for World News API with search, filtering, and news management capabilities",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+  "build": "npx --yes electron-builder",
+  "dist": "npx --yes electron-builder --publish=never",
+  "pack": "npx --yes electron-builder --dir",
+  "dist:win": "npx --yes electron-builder --win --publish=never",
+  "dist:linux": "npx --yes electron-builder --linux --publish=never",
+  "dist:mac": "npx --yes electron-builder --mac --publish=never",
+  "dist:all": "node scripts/dist-all.js"
+  },
+  "author": "David Urbansky",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "dependencies": {},
+  "build": {
+    "appId": "com.worldnewsapi.newsroom",
+    "productName": "World Newsroom",
+  "electronVersion": "27.1.0",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+  "assets/**/*"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}
