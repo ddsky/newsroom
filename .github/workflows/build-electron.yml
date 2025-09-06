@@ -32,10 +32,7 @@ jobs:
         working-directory: .
 
     env:
-      # Speeds up repeated Electron downloads
-      ELECTRON_CACHE: ${{ runner.temp }}/electron
-      ELECTRON_BUILDER_CACHE: ${{ runner.temp }}/electron-builder
-      # Prevents failing on missing code signing by default. Remove if you set up signing.
+      # Keep only values that don't need runner.* here
       CSC_IDENTITY_AUTO_DISCOVERY: "false"
       # If you later want to publish with electron-builder, set GH_TOKEN in repo secrets.
       # GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -83,6 +80,10 @@ jobs:
 
       - name: Build with electron-builder
         shell: bash
+        env:
+          # runner.* is valid at step level
+          ELECTRON_CACHE: ${{ runner.temp }}/electron
+          ELECTRON_BUILDER_CACHE: ${{ runner.temp }}/electron-builder
         run: |
           # Build only for the current OS, don't publish
           npx --yes electron-builder --${{ matrix.target }} --publish never
